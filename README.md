@@ -1,10 +1,10 @@
-- 👋 Hi, I’m @batman978 ... *for now*
-- 👀 I’m interested in ... writing about cybersecurity
-- 🌱 I’m currently learning ... cybersecurity
-- 💞️ I’m looking to collaborate on ... cybersecurity
-- 📫 How to reach me ... I'd rather you not
+- 👋 Hi, I’m the @grumpyciso ... come here for your sarcastic security comments
+- 👀 I’m interested in ... writing about the truth about the cybersecurity selling machine
+- 🌱 I’m currently learning ... how some cybersecurity firms deliver empty promises
+- 💞️ I’m looking to collaborate on ... better ways to do cybersecurity in the open
+- 📫 How to reach me ... I'd rather you didn't
 
 <!---
-batman978/batman978 is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+grumpyciso/grumpyciso.github.io is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 You can click the Preview link to take a look at your changes.
 --->
