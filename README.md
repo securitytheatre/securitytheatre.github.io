@@ -8,9 +8,9 @@ real security isn't found in the tools ...
 ... it's found in mindset
 
 my favourite tools:
-strong coffee
-loud music
-commandmline
+- strong coffee
+- loud music
+- a command line
 
 <!---
 grumpyciso/grumpyciso.github.io is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
