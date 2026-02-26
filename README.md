@@ -10,7 +10,8 @@ real security isn't found in the tools ...
 my favourite tools:
 - strong coffee
 - loud music
-- a command line
+- open source
+- command line
 
 <!---
 grumpyciso/grumpyciso.github.io is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
