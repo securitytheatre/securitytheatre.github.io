@@ -1,0 +1,52 @@
+# Deploy across repos or servers using peaceiris/actions-gh-pages over SSH
+# Deploy inspired by Apathetic Tools · MIT
+# https://github.com/apathetic-tools/snippets/blob/main/docs/github/github-pages-deploy
+# See also: https://github.com/marketplace/actions/github-pages-action
+
+name: Deploy to GitHub Pages
+
+on:
+  # Runs on pushes targeting the default branch
+  push:
+    branches: [ main ]
+  
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Allow this job to clone the repo and create a page deployment
+# We only need read because ssh deploy key will have the write at the destination.
+# If using `actions/deploy-pages` and `GITHUB_TOKEN`  to deploy to branch on the same repo you need write.
+permissions:
+  contents: read 
+  # pages: write # since we are ssh pushing, don't need this
+  # id-token: write # since we are ssh pushing, don't need this
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Single deploy job since we're just deploying
+  deploy:
+    runs-on: ubuntu-latest    
+    # If you stored the secret in the environment
+    environment: github-pages
+    steps:
+      - name: Checkout your repository using git
+        uses: actions/checkout@v4
+
+      # - name: Build site
+      #   run: pnpm run build
+          
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          deploy_key: ${{ secrets.DEPLOY_KEY }}
+          publish_branch: gh-pages
+          publish_dir: ./
+          enable_jekyll: true # false if using index.html
+          external_repository: securitytheatre/source
+        if: ${{ github.ref == 'refs/heads/main' }} # only deploy if main branch changed
