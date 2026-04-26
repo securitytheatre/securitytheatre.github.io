@@ -1,52 +1,51 @@
-# Deploy across repos or servers using peaceiris/actions-gh-pages over SSH
-# Deploy inspired by Apathetic Tools · MIT
-# https://github.com/apathetic-tools/snippets/blob/main/docs/github/github-pages-deploy
-# See also: https://github.com/marketplace/actions/github-pages-action
-
-name: Deploy to GitHub Pages
+name: Poll Private Repo and Build Jekyll
 
 on:
-  # Runs on pushes targeting the default branch
-  push:
-    branches: [ main ]
-  
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# Allow this job to clone the repo and create a page deployment
-# We only need read because ssh deploy key will have the write at the destination.
-# If using `actions/deploy-pages` and `GITHUB_TOKEN`  to deploy to branch on the same repo you need write.
-permissions:
-  contents: read 
-  # pages: write # since we are ssh pushing, don't need this
-  # id-token: write # since we are ssh pushing, don't need this
-
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  schedule:
+    - cron: '*/5 * * * *' # Check every 5 minutes
+  workflow_dispatch: # Allow manual trigger
 
 jobs:
-  # Single deploy job since we're just deploying
-  deploy:
-    runs-on: ubuntu-latest    
-    # If you stored the secret in the environment
-    environment: github-pages
+  build:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout your repository using git
+      - name: Checkout Public Repo
         uses: actions/checkout@v4
 
-      # - name: Build site
-      #   run: pnpm run build
-          
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Setup SSH Key
+        uses: webfactory/ssh-agent@v0.8.0
         with:
-          deploy_key: ${{ secrets.DEPLOY_KEY }}
-          publish_branch: gh-pages
-          publish_dir: ./
-          enable_jekyll: true # false if using index.html
-          external_repository: securitytheatre/source
-        if: ${{ github.ref == 'refs/heads/main' }} # only deploy if main branch changed
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }} # Your SSH private key
+
+      - name: Fetch Latest Commit from Private Repo
+        id: fetch
+        run: |
+          LATEST_SHA=$(git ls-remote git@github.com:securitytheatre/source.git main | awk '{print $1}')
+          echo "latest_sha=$LATEST_SHA" >> $GITHUB_OUTPUT
+
+      - name: Get Stored SHA
+        id: get_stored
+        run: |
+          STORED_SHA=$(cat ./private_repo_sha.txt 2>/dev/null || echo "")
+          echo "stored_sha=$STORED_SHA" >> $GITHUB_OUTPUT
+
+      - name: Update SHA, Build, and Deploy Jekyll
+        if: steps.fetch.outputs.latest_sha != steps.get_stored.outputs.stored_sha
+        run: |
+          # Update the stored SHA
+          echo ${{ steps.fetch.outputs.latest_sha }} > private_repo_sha.txt
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add private_repo_sha.txt
+          git commit -m "Update private repo SHA to ${{ steps.fetch.outputs.latest_sha }}"
+          git push
+
+          # Clone private repo content
+          git clone git@github.com:securitytheatre/source.git temp_private
+          # Copy Jekyll source files (adjust path as needed)
+          rsync -av temp_private/ . --exclude=.git --exclude=private_repo_sha.txt
+
+          # Build the Jekyll site
+          gem install bundler
+          bundle install
+          bundle exec jekyll build
