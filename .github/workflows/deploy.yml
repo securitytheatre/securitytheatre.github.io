@@ -45,7 +45,10 @@ jobs:
           # Copy Jekyll source files (adjust path as needed)
           rsync -av temp_private/ . --exclude=.git --exclude=private_repo_sha.txt
 
-          # Build the Jekyll site
-          gem install bundler
-          bundle install
+      # Build the Jekyll site
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.2 # Specify your version
+          bundler-cache: true # Installs gems and caches them
           bundle exec jekyll build
